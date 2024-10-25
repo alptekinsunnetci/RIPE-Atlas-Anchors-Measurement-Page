@@ -4,7 +4,7 @@ This is a simple web application for displaying the status of RIPE Atlas anchors
 
 ## Features
 
-- Displays real-time status of RIPE Atlas probes.
+- Displays the real-time accessibility of your RIPE Atlas Anchor.
 - Uses HTML and jQuery for a lightweight user experience.
 - Easy to customize.
 
