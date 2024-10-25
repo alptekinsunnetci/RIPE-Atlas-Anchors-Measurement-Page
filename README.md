@@ -18,5 +18,11 @@ This is a simple web application for displaying the status of RIPE Atlas anchors
    const measurementId = 17762848; // Change this value to your measurement ID
 
 
+## Page View
+
+
+![RIPE Atlas Anchors Measurement Page][(https://example.com/images/ripe-atlas.png](https://raw.githubusercontent.com/alptekinsunnetci/RIPE-Atlas-Anchors-Measurement-Page/refs/heads/main/ripe-atlas.png))
+
+
 ## Author
 Alptekin Sünnetci
