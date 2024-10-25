@@ -92,7 +92,7 @@
 			                StatusClass = "border-red";
 			            }
 			
-			            const lossBadgeClass = last_packet_loss > 0 ? "bg-danger" : "bg-success";
+			const lossBadgeClass = last_packet_loss > 0 ? "bg-danger" : "bg-success";
 			const html = `
 			<div class="col-md-4 measurement-card ${StatusClass}" id="${lastMeasurement}">
 			<div class="measurement-title" data-id="${probeId}" data-name="${probeName}">
