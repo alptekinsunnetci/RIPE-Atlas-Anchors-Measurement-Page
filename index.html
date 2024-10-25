@@ -1,0 +1,154 @@
+<script>
+    const measurementId = 17762848;
+</script>    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <title>RIPE Atlas Anchors Measurement Page</title>
+    <meta name="description" content="status.intibu.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
+    <style>
+        .navbar-brand, .navbar-nav .nav-link { color: #fff !important; }
+        .navbar { background-color: #007bff; }
+        .navbar-brand { font-weight: 700; font-size: 1.5em; }
+        .measurement-card { background-color: #f8f9fa; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,.1); text-align: center; border: 1px solid #e1e1e1; transition: transform .2s ease-in-out; }
+        .measurement-card:hover { transform: scale(1.05); }
+        .measurement-title { font-size: 1.2rem; font-weight: 700; color: #007bff; margin-bottom: 10px; }
+        .measurement-value { font-size: 1.5rem; color: #333; }
+        .loading { display: none; }
+    </style>
+</head>
+<body class="status index status-none">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">RIPE Atlas Anchors Measurement Page</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Status Page</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main role="main" class="container">
+        <div class="p-4 bg-white rounded">
+            <div class="loading text-center">
+                <h2>Loading...</h2>
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div class="row"></div>
+        </div>
+    </main>
+    <footer class="container py-4 text-center">
+        <hr>
+        <small>Programmed by <a target="_blank" href="https://alptekin.sunnetci.net">Alptekin Sünnetci</a></small>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        $(document).ready(function() {
+            const apiUrl = `https://atlas.ripe.net/api/v2/measurements/${measurementId}/status-check/?format=json`;
+
+            $('.loading').show();
+
+            $.getJSON(apiUrl, function(data) {
+                const { probes } = data;
+                const results = [];
+
+                $.each(probes, function(probeId, probeData) {
+                    const lastMeasurement = probeData.last;
+                    const last_packet_loss = probeData.last_packet_loss;
+                    let PingTime = lastMeasurement === null ? 99999 : lastMeasurement;
+                    if (last_packet_loss === 100) {
+                        PingTime = 99999;
+                    }
+                    PingTime = PingTime.toFixed(2);
+                    const probeName = probeData.source;
+
+                    results.push({
+                        probeId: probeId,
+                        probeName: probeName,
+                        lastMeasurement: lastMeasurement,
+                        last_packet_loss: last_packet_loss,
+                        PingTime: PingTime
+                    });
+                });
+
+                results.sort((a, b) => a.PingTime - b.PingTime);
+
+                $.each(results, function(index, probeData) {
+                    const { probeId, probeName, lastMeasurement, last_packet_loss, PingTime } = probeData;
+
+                    let StatusColor;
+                    if (PingTime < 71) {
+                        StatusColor = "green";
+                    } else if (PingTime < 120) {
+                        StatusColor = "orange";
+                    } else if (PingTime < 200) {
+                        StatusColor = "blue";
+                    } else {
+                        StatusColor = "red";
+                    }
+
+                    const html = `
+                        <div class="col-4 measurement-card" id="${lastMeasurement}">
+                            <div class="media text-muted pt-3 Detay" data-id="${probeId}" data-name="${probeName}">
+                                <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray" style="border-bottom: 1px solid ${StatusColor}!important;">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <strong class="text-gray-dark">
+                                            <span id="Probe${probeId}" class="flag-icon"></span> 
+                                            <span class="probe-name" id="probe-name-${probeId}"></span>
+                                        </strong>
+                                        <a style="color:${StatusColor}"><ms>${PingTime} ms</ms></a>
+                                    </div>
+                                    <span style="float:right">%${last_packet_loss}</span>
+                                    <div class="additional-info" id="info-${probeId}" style="display:none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    $('.row').append(html);
+                    
+                    $.getJSON(`https://atlas.ripe.net/api/v2/probes/?format=json&id__in=${probeId}`, function(probeDetails) {
+                        const { results } = probeDetails;
+                        if (results.length > 0) {
+                            const { asn_v4, country_code, description, address_v4 } = results[0]; 
+
+                            let displayName;
+                            if (!description) {
+                                displayName = `Probe: ${probeId}`;
+                            } else if (description.length > 40) {
+                                displayName = description.substring(0, 40) + "...";
+                            } else {
+                                displayName = description;
+                            }
+
+                            $(`#probe-name-${probeId}`).text(displayName);
+
+                            if (country_code) {
+                                $(`span#Probe${probeId}`).attr('class', `flag-icon flag-icon-${country_code.toLowerCase()}`);
+                            }
+                            
+                            const infoHtml = `
+                                <span><a target="_blank" href="https://bgp.tools/as/${asn_v4}">AS${asn_v4}</a> , <a target="_blank" href="https://bgp.tools/as/${address_v4}">${address_v4}</a></span>
+                            `;
+                            $(`#info-${probeId}`).html(infoHtml).show();
+                        }
+                    });
+                });
+                $('.loading').hide();
+            });
+        });
+    </script>
+</body>
+</html>
