@@ -50,13 +50,15 @@
 		<script>
 			$(document).ready(function() {
 			    const apiUrl = `https://atlas.ripe.net/api/v2/measurements/${measurementId}/status-check/?format=json`;
-			
+
 			    $('.loading').show();
-			
+
 			    $.getJSON(apiUrl, function(data) {
-			        const { probes } = data;
+			        const {
+			            probes
+			        } = data;
 			        const results = [];
-			
+
 			        $.each(probes, function(probeId, probeData) {
 			            const lastMeasurement = probeData.last;
 			            const last_packet_loss = probeData.last_packet_loss;
@@ -66,7 +68,7 @@
 			            }
 			            PingTime = PingTime.toFixed(2);
 			            const probeName = probeData.source;
-			
+
 			            results.push({
 			                probeId: probeId,
 			                probeName: probeName,
@@ -75,12 +77,18 @@
 			                PingTime: PingTime
 			            });
 			        });
-			
+
 			        results.sort((a, b) => a.PingTime - b.PingTime);
-			
+
 			        $.each(results, function(index, probeData) {
-			            const { probeId, probeName, lastMeasurement, last_packet_loss, PingTime } = probeData;
-			
+			            const {
+			                probeId,
+			                probeName,
+			                lastMeasurement,
+			                last_packet_loss,
+			                PingTime
+			            } = probeData;
+
 			            let StatusClass;
 			            if (PingTime < 71) {
 			                StatusClass = "border-green";
@@ -91,9 +99,9 @@
 			            } else {
 			                StatusClass = "border-red";
 			            }
-			
-			const lossBadgeClass = last_packet_loss > 0 ? "bg-danger" : "bg-success";
-			const html = `
+
+			            const lossBadgeClass = last_packet_loss > 0 ? "bg-danger" : "bg-success";
+			            const html = `
 			<div class="col-md-4 measurement-card ${StatusClass}" id="${lastMeasurement}">
 			<div class="measurement-title" data-id="${probeId}" data-name="${probeName}">
 			    <span class="flag-icon me-2" id="probe-flag-${probeId}"></span>
@@ -108,16 +116,23 @@
 			</div>
 			</div>
 			`;
-			$('.row').append(html);
-			
-			
-			
-			$.getJSON(`https://atlas.ripe.net/api/v2/probes/?format=json&id__in=${probeId}`, function(probeDetails) {
-			const { results } = probeDetails;
-			if (results.length > 0) {
-			const { asn_v4, country_code, description, address_v4 } = results[0];
-			
-			let displayName;
+			            $('.row').append(html);
+
+
+
+			            $.getJSON(`https://atlas.ripe.net/api/v2/probes/?format=json&id__in=${probeId}`, function(probeDetails) {
+			                const {
+			                    results
+			                } = probeDetails;
+			                if (results.length > 0) {
+			                    const {
+			                        asn_v4,
+			                        country_code,
+			                        description,
+			                        address_v4
+			                    } = results[0];
+
+			                    let displayName;
 			                    if (!description) {
 			                        displayName = `Probe: ${probeId}`;
 			                    } else if (description.length > 30) {
@@ -125,20 +140,20 @@
 			                    } else {
 			                        displayName = description;
 			                    }
-			
-			$(`#probe-name-${probeId}`).text(displayName);
-			
-			if (country_code) {
-			    $(`#probe-flag-${probeId}`).attr('class', `flag-icon flag-icon-${country_code.toLowerCase()} me-2`);
-			}
-			
-			const infoHtml = `
+
+			                    $(`#probe-name-${probeId}`).text(displayName);
+
+			                    if (country_code) {
+			                        $(`#probe-flag-${probeId}`).attr('class', `flag-icon flag-icon-${country_code.toLowerCase()} me-2`);
+			                    }
+
+			                    const infoHtml = `
 			    <a class="badge bg-success me-2" target="_blank" href="https://bgp.tools/as/${asn_v4}">AS${asn_v4}</a>
 			    <a class="badge bg-success me-2" target="_blank" href="https://bgp.tools/as/${address_v4}">${address_v4}</a>
 			`;
-			$(`#asn-info-${probeId}`).html(infoHtml);
-			}
-			});
+			                    $(`#asn-info-${probeId}`).html(infoHtml);
+			                }
+			            });
 			        });
 			        $('.loading').hide();
 			    });
