@@ -16,3 +16,7 @@ This is a simple web application for displaying the status of RIPE Atlas anchors
 
    ```javascript
    const measurementId = 17762848; // Change this value to your measurement ID
+
+
+## Author
+Alptekin Sünnetci
