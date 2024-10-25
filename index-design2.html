@@ -1,0 +1,148 @@
+<script>
+	const measurementId = 17762848;
+</script>    
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta charset="utf-8">
+		<title>RIPE Atlas Anchors Measurement Page</title>
+		<meta name="description" content="status.intibu.com">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
+		<style>
+			.navbar{background-color:#0056b3;color:#fff}.navbar-brand{font-weight:700;font-size:1.6em;color:#fff}.navbar-nav .nav-link{color:#fff;font-weight:500}.measurement-card{width: 32%; margin: auto; background-color:#fff;border-radius:10px;box-shadow:0 8px 16px rgba(0,0,0,.1);margin-bottom:1.5rem;padding:20px;transition:transform .3s;border:none}.measurement-card:hover{transform:translateY(-5px)}.measurement-title{font-size:1.1rem;font-weight:700;color:#007bff}.loading h2,.measurement-value{font-size:1.5rem;color:#333}.additional-info a{color:#6c757d;text-decoration:none}.additional-info a:hover{text-decoration:underline}.loading{display:none;text-align:center;padding:50px} .border-green { border: 3px solid green; } .border-orange { border: 3px solid orange; } .border-blue { border: 3px solid blue; } .border-red { border: 3px solid red; }
+		</style>
+	</head>
+	<body class="status index status-none">
+		<nav class="navbar navbar-expand-lg">
+			<div class="container">
+				<a class="navbar-brand" href="#">RIPE Atlas Anchors Measurement Page</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav ms-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="#">Status Page</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+		<main role="main" class="container">
+			<div class="p-4 bg-white rounded">
+				<div class="loading text-center">
+					<h2>Loading...</h2>
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+				</div>
+				<div class="row"></div>
+			</div>
+		</main>
+		<footer class="container py-4 text-center">
+			<hr>
+			<small>Programmed by <a target="_blank" href="https://alptekin.sunnetci.net">Alptekin Sünnetci</a></small>
+		</footer>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script>
+			$(document).ready(function() {
+			    const apiUrl = `https://atlas.ripe.net/api/v2/measurements/${measurementId}/status-check/?format=json`;
+			
+			    $('.loading').show();
+			
+			    $.getJSON(apiUrl, function(data) {
+			        const { probes } = data;
+			        const results = [];
+			
+			        $.each(probes, function(probeId, probeData) {
+			            const lastMeasurement = probeData.last;
+			            const last_packet_loss = probeData.last_packet_loss;
+			            let PingTime = lastMeasurement === null ? 99999 : lastMeasurement;
+			            if (last_packet_loss === 100) {
+			                PingTime = 99999;
+			            }
+			            PingTime = PingTime.toFixed(2);
+			            const probeName = probeData.source;
+			
+			            results.push({
+			                probeId: probeId,
+			                probeName: probeName,
+			                lastMeasurement: lastMeasurement,
+			                last_packet_loss: last_packet_loss,
+			                PingTime: PingTime
+			            });
+			        });
+			
+			        results.sort((a, b) => a.PingTime - b.PingTime);
+			
+			        $.each(results, function(index, probeData) {
+			            const { probeId, probeName, lastMeasurement, last_packet_loss, PingTime } = probeData;
+			
+			            let StatusClass;
+			            if (PingTime < 71) {
+			                StatusClass = "border-green";
+			            } else if (PingTime < 120) {
+			                StatusClass = "border-orange";
+			            } else if (PingTime < 200) {
+			                StatusClass = "border-blue";
+			            } else {
+			                StatusClass = "border-red";
+			            }
+			
+			            const lossBadgeClass = last_packet_loss > 0 ? "bg-danger" : "bg-success";
+			const html = `
+			<div class="col-md-4 measurement-card ${StatusClass}" id="${lastMeasurement}">
+			<div class="measurement-title" data-id="${probeId}" data-name="${probeName}">
+			    <span class="flag-icon me-2" id="probe-flag-${probeId}"></span>
+			    <span class="probe-name" id="probe-name-${probeId}"></span>
+			</div>
+			<div class="measurement-value"><ms>${PingTime} ms</ms></div>
+			<div class="d-flex align-items-center">
+			                        <a class="badge ${lossBadgeClass} me-2" href="#">Loss %${last_packet_loss}</a>
+			    <span id="asn-info-${probeId}"></span>
+			</div>
+			<div class="additional-info mt-2" id="info-${probeId}">
+			</div>
+			</div>
+			`;
+			$('.row').append(html);
+			
+			
+			
+			$.getJSON(`https://atlas.ripe.net/api/v2/probes/?format=json&id__in=${probeId}`, function(probeDetails) {
+			const { results } = probeDetails;
+			if (results.length > 0) {
+			const { asn_v4, country_code, description, address_v4 } = results[0];
+			
+			let displayName;
+			                    if (!description) {
+			                        displayName = `Probe: ${probeId}`;
+			                    } else if (description.length > 30) {
+			                        displayName = description.substring(0, 30) + "...";
+			                    } else {
+			                        displayName = description;
+			                    }
+			
+			$(`#probe-name-${probeId}`).text(displayName);
+			
+			if (country_code) {
+			    $(`#probe-flag-${probeId}`).attr('class', `flag-icon flag-icon-${country_code.toLowerCase()} me-2`);
+			}
+			
+			const infoHtml = `
+			    <a class="badge bg-success me-2" target="_blank" href="https://bgp.tools/as/${asn_v4}">AS${asn_v4}</a>
+			    <a class="badge bg-success me-2" target="_blank" href="https://bgp.tools/as/${address_v4}">${address_v4}</a>
+			`;
+			$(`#asn-info-${probeId}`).html(infoHtml);
+			}
+			});
+			        });
+			        $('.loading').hide();
+			    });
+			});
+		</script>
+	</body>
+</html>
