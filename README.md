@@ -20,7 +20,10 @@ This is a simple web application for displaying the status of RIPE Atlas anchors
 
 ## Page View
 
-![Web UI](https://raw.githubusercontent.com/alptekinsunnetci/RIPE-Atlas-Anchors-Measurement-Page/refs/heads/main/ripe-atlas.png)
+![Web UI - 1](https://raw.githubusercontent.com/alptekinsunnetci/RIPE-Atlas-Anchors-Measurement-Page/refs/heads/main/ripe-atlas.png)
+
+
+![Web UI - 2](https://raw.githubusercontent.com/alptekinsunnetci/RIPE-Atlas-Anchors-Measurement-Page/refs/heads/main/ripe-atlas-2.png)
 
 
 
