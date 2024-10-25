@@ -140,7 +140,7 @@
                             }
                             
                             const infoHtml = `
-                                <span><a target="_blank" href="https://bgp.tools/as/${asn_v4}">AS${asn_v4}</a> , <a target="_blank" href="https://bgp.tools/as/${address_v4}">${address_v4}</a></span>
+                                <span><a target="_blank" href="https://bgp.tools/as/${asn_v4}">AS${asn_v4}</a> , <a target="_blank" href="https://bgp.tools/prefix/${address_v4}">${address_v4}</a></span>
                             `;
                             $(`#info-${probeId}`).html(infoHtml).show();
                         }
